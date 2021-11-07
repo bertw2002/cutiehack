@@ -6,13 +6,7 @@ import sys
 import json
 import cv2
 
-def get_total(photo):
-
-    # prices go here
-    price_of_bananas = 5
-    price_of_lemons = 2
-    price_of_apples = 4
-    total_price = 0
+def show_things(photo):
 
     client=boto3.client('rekognition')
 
@@ -24,26 +18,6 @@ def get_total(photo):
         'data': response.get('Labels')
     }
     
-    item_name = str(data["data"][0]["Name"])
-    num_of_items = len(data["data"][0]["Instances"])
-
-    if item_name.upper() == "BANANA" or item_name.upper() == "BANANAS":
-        total_price = num_of_items * price_of_bananas
-    elif item_name.upper() == "CITRUS FRUIT" or item_name.upper() == "LEMON" or item_name.upper() == "LEMONS":
-        total_price = num_of_items * price_of_lemons
-    elif item_name.upper() == "APPLE" or item_name.upper() == "APPLES":
-        total_price = num_of_items * price_of_apples
-    else:
-        total_price = num_of_items * 100
-
-    shopping_list = {
-        "Num": num_of_items,
-        "Item": item_name,
-        "Total": total_price
-    }
-
-    return shopping_list
-
 
 
 def remove_background(img, threshold):
@@ -93,13 +67,8 @@ def main():
         print('please supply photo')
         
     photo = sys.argv[1]
-    print(get_total(photo))
 
-    # print(detect_labels(photo))
-    # photo=''
-    # bucket=''
-    # label_count=detect_labels(photo, bucket)
-    # print("Labels detected: " + str(label_count))
+    show_things(photo)
 
 
 if __name__ == "__main__":

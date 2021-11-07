@@ -1,39 +1,40 @@
-from fastapi import FastAPI, File, UploadFile
-import uuid
+from fastapi import FastAPI, File, UploadFile, Body, Form
+import boto3
+from requests_toolbelt.multipart import decoder
+import sys
+import io
+from typing import List
+
+import json
+import cv2
+
 app = FastAPI()
 
 
-import boto3
 from fastapi.middleware.cors import CORSMiddleware
 # from test import detect_labels
 
 app = FastAPI()
 
-origins= ['http://localhost:3000']
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=['*'],
     allow_credentials=True,
-    allow_methods=['GET'],
+    allow_methods=['*'],
     allow_headers=['*']
 )
 
-#WRITE THE FUNCTION
-def detect_labels(photo):
+def detect_labels(base):
 
     client=boto3.client('rekognition')
 
-    with open(photo, 'rb') as image:
-        response = client.detect_labels(Image={'Bytes': image.read()})
+  
+    response = client.detect_labels(Image={'Bytes': base})
     
     data = {
-        'source': photo,
         'data': response.get('Labels')
     }
-
-    for key, value in data.items():
-        print(key)
 
     return data
 
@@ -43,8 +44,28 @@ async def root():
 
 image = 'bananas.jpg'
 
-@app.post("/calc")
-async def label(image: UploadFile = File(...)):
-    print(image)
-   
-    return {"message": "ggggg"}
+@app.post("/calc/")
+async def label(data: str):
+    res = await detect_labels(data)
+    # await detect_labels(data)
+    print(res)
+    return {"message": res}
+
+@app.post("/test")
+# image: bytes = File(...)
+async def upload_image(image: bytes = File(...)):
+    # print(type(image))
+    # d = image.decode()
+    # p = d.encode(utf8)
+    # print(dir(d))
+    # print(type(p))
+    # print(dir(image.decode))
+    # print(image.format_map)
+    data = detect_labels(image)
+    # print(res)
+    num_of_bananas = len(data["data"][0]["Instances"])
+    price_of_bananas = 4.0
+
+    print("Total price for", num_of_bananas, "bananas:", price_of_bananas * num_of_bananas)
+    dict = {'bananas': num_of_bananas, 'price': price_of_bananas * num_of_bananas}
+    return {"filename": 'hhh'}
